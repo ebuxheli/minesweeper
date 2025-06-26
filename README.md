@@ -10,7 +10,7 @@ A nostalgic recreation of the Windows XP Minesweeper game with modern enhancemen
 
 ## 🚀 Getting Started
 
-Download the `minesweeper.html` file from the repo in any modern web browser. I promise there is no spam-ware.
+Go to my [github.io page minesweeper landing](https://ebuxheli.github.io/minesweeper/minesweeper.html) 
 
 ## 🕹️ How to Play
 
