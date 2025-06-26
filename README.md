@@ -8,6 +8,10 @@ A nostalgic recreation of the Windows XP Minesweeper game with modern enhancemen
 
 ![image](https://github.com/user-attachments/assets/4ebe47f4-115a-4098-89c5-801b8eca9345)
 
+## 🚀 Getting Started
+
+Download the `minesweeper.html` file from the repo in any modern web browser. I promise there is no spam-ware.
+
 ## 🎮 Features
 
 ### Classic Gameplay
@@ -57,16 +61,6 @@ A nostalgic recreation of the Windows XP Minesweeper game with modern enhancemen
   - 🙂 Normal
   - 😎 Victory
   - 😵 Game Over
-
-## 🚀 Getting Started
-
-### Installation
-1. Clone this repository:
-```bash
-git clone https://github.com/ebuxheli/minesweeper.git
-```
-
-2. Open `minesweeper.html` in any modern web browser
 
 ### No dependencies required!
 This game is built with vanilla HTML, CSS, and JavaScript - no frameworks or libraries needed.
