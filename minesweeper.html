@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classic Minesweeper</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #c0c0c0;
+            font-family: "MS Sans Serif", Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #f0f;
+            animation: fall linear forwards;
+            top: -20px;
+            z-index: 100;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(calc(100vh + 20px)) rotate(360deg);
+            }
+        }
+
+        .medal-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.95);
+            border: 3px solid #333;
+            border-radius: 20px;
+            padding: 30px 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 200;
+            text-align: center;
+            animation: medalContainerAppear 0.5s ease-out;
+        }
+
+        @keyframes medalContainerAppear {
+            from {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .medal-overlay {
+            font-size: 120px;
+            margin-bottom: 20px;
+            animation: medalSpin 0.5s ease-out;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        @keyframes medalSpin {
+            from {
+                transform: scale(0) rotate(0deg);
+            }
+            to {
+                transform: scale(1) rotate(360deg);
+            }
+        }
+
+        .medal-text {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .game-container {
+            background-color: #c0c0c0;
+            border: 3px solid;
+            border-color: #ffffff #808080 #808080 #ffffff;
+            padding: 8px;
+        }
+
+        .header {
+            background-color: #c0c0c0;
+            border: 2px solid;
+            border-color: #808080 #ffffff #ffffff #808080;
+            padding: 4px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .display {
+            background-color: #000000;
+            color: #ff0000;
+            font-family: "Digital", monospace;
+            font-size: 24px;
+            padding: 2px 6px;
+            border: 2px solid;
+            border-color: #808080 #ffffff #ffffff #808080;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .face-button {
+            width: 26px;
+            height: 26px;
+            border: 2px solid;
+            border-color: #ffffff #808080 #808080 #ffffff;
+            background-color: #c0c0c0;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .face-button:active {
+            border-color: #808080 #ffffff #ffffff #808080;
+        }
+
+        .face-button.game-over {
+            animation: facePopLoss 0.8s ease-out;
+            z-index: 300;
+            position: relative;
+        }
+
+        @keyframes facePopLoss {
+            0% {
+                transform: scale(1) rotate(0deg);
+                filter: brightness(1);
+            }
+            10% {
+                transform: scale(3) rotate(-20deg);
+                filter: brightness(1.2) drop-shadow(0 0 20px rgba(255, 0, 0, 0.8));
+            }
+            20% {
+                transform: scale(2.5) rotate(25deg);
+                filter: brightness(1.3) drop-shadow(0 0 25px rgba(255, 0, 0, 0.9));
+            }
+            30% {
+                transform: scale(2.8) rotate(-15deg);
+                filter: brightness(1.2) drop-shadow(0 0 20px rgba(255, 0, 0, 0.8));
+            }
+            40% {
+                transform: scale(2.3) rotate(20deg);
+                filter: brightness(1.1) drop-shadow(0 0 15px rgba(255, 0, 0, 0.7));
+            }
+            50% {
+                transform: scale(2.6) rotate(-10deg);
+                filter: brightness(1.2) drop-shadow(0 0 20px rgba(255, 0, 0, 0.8));
+            }
+            60% {
+                transform: scale(2.1) rotate(15deg);
+                filter: brightness(1.1) drop-shadow(0 0 15px rgba(255, 0, 0, 0.6));
+            }
+            70% {
+                transform: scale(2.4) rotate(-8deg);
+                filter: brightness(1.1) drop-shadow(0 0 10px rgba(255, 0, 0, 0.5));
+            }
+            80% {
+                transform: scale(1.8) rotate(10deg);
+                filter: brightness(1.05) drop-shadow(0 0 8px rgba(255, 0, 0, 0.4));
+            }
+            90% {
+                transform: scale(1.4) rotate(-5deg);
+                filter: brightness(1.02) drop-shadow(0 0 5px rgba(255, 0, 0, 0.3));
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+                filter: brightness(1);
+            }
+        }
+
+        .game-board {
+            display: grid;
+            gap: 0;
+            border: 3px solid;
+            border-color: #808080 #ffffff #ffffff #808080;
+            background-color: #808080;
+        }
+
+        .cell {
+            width: 20px;
+            height: 20px;
+            border: 2px solid;
+            border-color: #ffffff #808080 #808080 #ffffff;
+            background-color: #c0c0c0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            user-select: none;
+        }
+
+        .cell.revealed {
+            border: 1px solid #808080;
+            background-color: #c0c0c0;
+            cursor: default;
+        }
+
+        .cell.mine {
+            background-color: #ff0000;
+        }
+
+        .cell.flagged {
+            background-color: #c0c0c0;
+        }
+
+        .cell.flagged::after {
+            content: "🚩";
+            font-size: 12px;
+        }
+
+        .cell.mine.revealed::after {
+            content: "💣";
+            font-size: 14px;
+        }
+
+        .cell.wrong-flag {
+            background-color: #c0c0c0;
+        }
+
+        .cell.wrong-flag::after {
+            content: "❌";
+            font-size: 12px;
+        }
+
+        .number-1 { color: #0000ff; }
+        .number-2 { color: #008000; }
+        .number-3 { color: #ff0000; }
+        .number-4 { color: #000080; }
+        .number-5 { color: #800000; }
+        .number-6 { color: #008080; }
+        .number-7 { color: #000000; }
+        .number-8 { color: #808080; }
+
+        .difficulty-select {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .hint-button-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .hint-x {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: #ff0000;
+            font-weight: bold;
+            pointer-events: none;
+            display: none;
+        }
+
+        select {
+            padding: 4px;
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+    <button class="instructions-button" onclick="showInstructions()" title="Instructions">❓</button>
+    <div class="game-container">
+        <div class="difficulty-select">
+            <select id="difficulty" onchange="changeDifficulty()">
+                <option value="beginner">Beginner (9x9, 10 mines)</option>
+                <option value="intermediate">Intermediate (16x16, 40 mines)</option>
+                <option value="expert">Expert (30x16, 99 mines)</option>
+            </select>
+        </div>
+        <div class="header">
+            <div class="display" id="mine-count">010</div>
+            <button class="face-button" id="face-button" onclick="resetGame()">🙂</button>
+            <div class="display" id="timer">000</div>
+        </div>
+        <div class="game-board" id="game-board"></div>
+        <div style="margin-top: 8px; text-align: center;">
+            <div class="hint-button-container">
+                <button class="face-button" id="hint-button" onclick="useHint()" onkeydown="if(event.code === 'Space') event.preventDefault();" title="Hints remaining" style="width: 90px; padding: 0 8px; font-size: 13px;">💡 Hints: 3</button>
+                <div class="hint-x" id="hint-x"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let board = [];
+        let revealed = [];
+        let flagged = [];
+        let gameOver = false;
+        let firstClick = true;
+        let timer = 0;
+        let timerInterval = null;
+        let hintsUsed = 0;
+        let hintsPerGame = 3;
+        let hoveredCell = null;
+        
+        // Difficulty settings
+        const difficulties = {
+            beginner: { rows: 9, cols: 9, mines: 10 },
+            intermediate: { rows: 16, cols: 16, mines: 40 },
+            expert: { rows: 16, cols: 30, mines: 99 }
+        };
+        
+        let currentDifficulty = 'beginner';
+        let { rows, cols, mines } = difficulties[currentDifficulty];
+
+        function changeDifficulty() {
+            currentDifficulty = document.getElementById('difficulty').value;
+            ({ rows, cols, mines } = difficulties[currentDifficulty]);
+            resetGame();
+        }
+
+        function initBoard() {
+            board = Array(rows).fill().map(() => Array(cols).fill(0));
+            revealed = Array(rows).fill().map(() => Array(cols).fill(false));
+            flagged = Array(rows).fill().map(() => Array(cols).fill(false));
+        }
+
+        function placeMines(excludeRow, excludeCol) {
+            let minesPlaced = 0;
+            while (minesPlaced < mines) {
+                const row = Math.floor(Math.random() * rows);
+                const col = Math.floor(Math.random() * cols);
+                
+                // Don't place mine on first click or where mine already exists
+                if ((row === excludeRow && col === excludeCol) || board[row][col] === -1) {
+                    continue;
+                }
+                
+                board[row][col] = -1;
+                minesPlaced++;
+                
+                // Update numbers around mine
+                for (let dr = -1; dr <= 1; dr++) {
+                    for (let dc = -1; dc <= 1; dc++) {
+                        const newRow = row + dr;
+                        const newCol = col + dc;
+                        if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols && board[newRow][newCol] !== -1) {
+                            board[newRow][newCol]++;
+                        }
+                    }
+                }
+            }
+        }
+
+        function renderBoard() {
+            const gameBoard = document.getElementById('game-board');
+            gameBoard.innerHTML = '';
+            gameBoard.style.gridTemplateColumns = `repeat(${cols}, 20px)`;
+            
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    
+                    cell.addEventListener('click', () => handleClick(row, col));
+                    cell.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        handleRightClick(row, col);
+                    });
+                    cell.addEventListener('mouseenter', () => {
+                        hoveredCell = {row, col};
+                    });
+                    cell.addEventListener('mouseleave', () => {
+                        hoveredCell = null;
+                    });
+                    
+                    updateCell(cell, row, col);
+                    gameBoard.appendChild(cell);
+                }
+            }
+        }
+
+        function updateCell(cell, row, col) {
+            cell.className = 'cell';
+            
+            if (flagged[row][col]) {
+                cell.classList.add('flagged');
+            } else if (revealed[row][col]) {
+                cell.classList.add('revealed');
+                if (board[row][col] === -1) {
+                    cell.classList.add('mine');
+                } else if (board[row][col] > 0) {
+                    cell.textContent = board[row][col];
+                    cell.classList.add(`number-${board[row][col]}`);
+                }
+            }
+            
+            // Show wrong flags when game is over
+            if (gameOver && !revealed[row][col] && flagged[row][col] && board[row][col] !== -1) {
+                cell.className = 'cell wrong-flag';
+            }
+        }
+
+        function handleClick(row, col) {
+            if (gameOver || flagged[row][col]) return;
+            
+            // If clicking on a revealed number, try chord clicking
+            if (revealed[row][col] && board[row][col] > 0) {
+                chordClick(row, col);
+                return;
+            }
+            
+            // Normal click on unrevealed cell
+            if (revealed[row][col]) return;
+            
+            if (firstClick) {
+                firstClick = false;
+                placeMines(row, col);
+                startTimer();
+            }
+            
+            revealCell(row, col);
+            
+            if (board[row][col] === -1) {
+                endGame(false);
+            } else if (checkWin()) {
+                endGame(true);
+            }
+        }
+
+        function chordClick(row, col) {
+            // Count flags around the cell
+            let flagCount = 0;
+            for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                    const newRow = row + dr;
+                    const newCol = col + dc;
+                    if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols && flagged[newRow][newCol]) {
+                        flagCount++;
+                    }
+                }
+            }
+            
+            // If flag count matches the number, reveal all unflagged adjacent cells
+            if (flagCount === board[row][col]) {
+                let hitMine = false;
+                for (let dr = -1; dr <= 1; dr++) {
+                    for (let dc = -1; dc <= 1; dc++) {
+                        const newRow = row + dr;
+                        const newCol = col + dc;
+                        if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols && 
+                            !revealed[newRow][newCol] && !flagged[newRow][newCol]) {
+                            revealCell(newRow, newCol);
+                            if (board[newRow][newCol] === -1) {
+                                hitMine = true;
+                            }
+                        }
+                    }
+                }
+                
+                if (hitMine) {
+                    endGame(false);
+                } else if (checkWin()) {
+                    endGame(true);
+                }
+            }
+        }
+
+        function handleRightClick(row, col) {
+            if (gameOver || revealed[row][col]) return;
+            
+            flagged[row][col] = !flagged[row][col];
+            updateFlagCount();
+            renderBoard();
+        }
+
+        function revealCell(row, col) {
+            if (row < 0 || row >= rows || col < 0 || col >= cols || revealed[row][col] || flagged[row][col]) {
+                return;
+            }
+            
+            revealed[row][col] = true;
+            
+            if (board[row][col] === 0) {
+                // Reveal all adjacent cells if current cell is empty
+                for (let dr = -1; dr <= 1; dr++) {
+                    for (let dc = -1; dc <= 1; dc++) {
+                        revealCell(row + dr, col + dc);
+                    }
+                }
+            }
+            
+            renderBoard();
+        }
+
+        function checkWin() {
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    if (board[row][col] !== -1 && !revealed[row][col]) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function createConfetti() {
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffa500', '#ff69b4'];
+            const confettiCount = 150;
+            
+            for (let i = 0; i < confettiCount; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.width = (Math.random() * 10 + 5) + 'px';
+                    confetti.style.height = confetti.style.width;
+                    confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                    confetti.style.opacity = Math.random() * 0.8 + 0.2;
+                    
+                    document.body.appendChild(confetti);
+                    
+                    // Remove confetti after animation completes
+                    confetti.addEventListener('animationend', () => {
+                        confetti.remove();
+                    });
+                }, i * 20);
+            }
+        }
+
+        function playVictorySound() {
+            // Create audio context
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Create the trumpet fanfare
+            const playNote = (frequency, startTime, duration, gain = 0.3) => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = frequency;
+                oscillator.type = 'sawtooth'; // Brass-like sound
+                
+                // Envelope for more realistic trumpet sound
+                gainNode.gain.setValueAtTime(0, startTime);
+                gainNode.gain.linearRampToValueAtTime(gain, startTime + 0.05);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+                
+                oscillator.start(startTime);
+                oscillator.stop(startTime + duration);
+            };
+            
+            const now = audioContext.currentTime;
+            
+            // Victory fanfare notes (C-E-G-C pattern)
+            playNote(261.63, now, 0.2);          // C4
+            playNote(329.63, now + 0.15, 0.2);   // E4
+            playNote(392.00, now + 0.3, 0.2);    // G4
+            playNote(523.25, now + 0.45, 0.6);   // C5 (held longer)
+        }
+
+        function showMedal() {
+            let medal, medalText;
+            
+            if (hintsUsed === 0) {
+                medal = '🥇';
+                medalText = 'Gold Medal!<br>Perfect game with no hints!';
+            } else if (hintsUsed === 1) {
+                medal = '🥈';
+                medalText = 'Silver Medal!<br>Great job with only 1 hint!';
+            } else if (hintsUsed === 2) {
+                medal = '🥉';
+                medalText = 'Bronze Medal!<br>Good work with 2 hints!';
+            } else {
+                medal = '🙂';
+                medalText = 'Participation Trophy<br>At least you tried...';
+            }
+            
+            const medalContainer = document.createElement('div');
+            medalContainer.className = 'medal-container';
+            
+            const medalOverlay = document.createElement('div');
+            medalOverlay.className = 'medal-overlay';
+            medalOverlay.textContent = medal;
+            
+            const medalTextDiv = document.createElement('div');
+            medalTextDiv.className = 'medal-text';
+            medalTextDiv.innerHTML = medalText;
+            
+            // Make participation award look less impressive
+            if (hintsUsed >= 3) {
+                medalContainer.style.backgroundColor = 'rgba(200, 200, 200, 0.9)';
+                medalContainer.style.borderColor = '#666';
+                medalOverlay.style.filter = 'grayscale(0.5) opacity(0.7)';
+                medalOverlay.style.transform = 'scale(0.8) rotate(-10deg)';
+            }
+            
+            medalContainer.appendChild(medalOverlay);
+            medalContainer.appendChild(medalTextDiv);
+            document.body.appendChild(medalContainer);
+            
+            // Play victory sound (but quieter for participation award)
+            if (hintsUsed < 3) {
+                playVictorySound();
+            } else {
+                // Play a less enthusiastic sound for participation award
+                playParticipationSound();
+            }
+            
+            // Remove medal after 5 seconds
+            setTimeout(() => {
+                medalContainer.remove();
+            }, 5000);
+        }
+        
+        function playParticipationSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            const playNote = (frequency, startTime, duration, gain = 0.2) => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = frequency;
+                oscillator.type = 'sine'; // Duller sound
+                
+                gainNode.gain.setValueAtTime(0, startTime);
+                gainNode.gain.linearRampToValueAtTime(gain, startTime + 0.05);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+                
+                oscillator.start(startTime);
+                oscillator.stop(startTime + duration);
+            };
+            
+            const now = audioContext.currentTime;
+            
+            // Underwhelming two-note "participation" sound
+            playNote(261.63, now, 0.3, 0.15);      // C4 (quiet)
+            playNote(261.63, now + 0.35, 0.3, 0.1); // C4 again (even quieter)
+        }
+
+        function playGameOverSound() {
+            // Create audio context
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Create the sad trombone "duh duuuuuuhh" sound
+            const playNote = (frequency, startTime, duration, gain = 0.3) => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.type = 'sawtooth'; // Brass-like sound
+                
+                // Start at the frequency and slide down for sad effect
+                oscillator.frequency.setValueAtTime(frequency, startTime);
+                oscillator.frequency.exponentialRampToValueAtTime(frequency * 0.8, startTime + duration);
+                
+                // Envelope
+                gainNode.gain.setValueAtTime(0, startTime);
+                gainNode.gain.linearRampToValueAtTime(gain, startTime + 0.02);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+                
+                oscillator.start(startTime);
+                oscillator.stop(startTime + duration);
+            };
+            
+            const now = audioContext.currentTime;
+            
+            // "Duh duuuuuuhh" - two descending notes
+            playNote(147, now, 0.3, 0.4);           // D3 "duh"
+            playNote(123.47, now + 0.35, 0.8, 0.4); // B2 "duuuuuuhh" (longer and lower)
+        }
+
+        function endGame(won) {
+            gameOver = true;
+            stopTimer();
+            
+            // Reveal all mines
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    if (board[row][col] === -1) {
+                        revealed[row][col] = true;
+                    }
+                }
+            }
+            
+            const faceButton = document.getElementById('face-button');
+            faceButton.textContent = won ? '😎' : '😵';
+            
+            if (!won) {
+                // Add animation class for loss
+                faceButton.classList.add('game-over');
+                // Remove class after animation completes
+                setTimeout(() => {
+                    faceButton.classList.remove('game-over');
+                }, 800);
+                playGameOverSound();
+            }
+            
+            renderBoard();
+            
+            if (won) {
+                createConfetti();
+                setTimeout(showMedal, 500);
+            }
+        }
+
+        function updateFlagCount() {
+            let flagCount = 0;
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    if (flagged[row][col]) flagCount++;
+                }
+            }
+            const remaining = mines - flagCount;
+            document.getElementById('mine-count').textContent = String(Math.max(0, remaining)).padStart(3, '0');
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timer++;
+                document.getElementById('timer').textContent = String(Math.min(999, timer)).padStart(3, '0');
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function useHint() {
+            if (gameOver || hintsUsed >= hintsPerGame) return;
+            
+            // If it's the first click, we need to place mines first
+            if (firstClick) {
+                // Pick a random safe starting position
+                const startRow = Math.floor(Math.random() * rows);
+                const startCol = Math.floor(Math.random() * cols);
+                firstClick = false;
+                placeMines(startRow, startCol);
+                startTimer();
+            }
+            
+            // Find all safe unrevealed squares
+            const safeSquares = [];
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    if (!revealed[row][col] && !flagged[row][col] && board[row][col] !== -1) {
+                        safeSquares.push({row, col});
+                    }
+                }
+            }
+            
+            if (safeSquares.length > 0) {
+                // Score each safe square by how helpful it would be
+                let bestSquare = safeSquares[0];
+                let bestScore = -1;
+                
+                for (const square of safeSquares) {
+                    let score = 0;
+                    
+                    // Count revealed neighbors (higher = more helpful, as it's near active play)
+                    let revealedNeighbors = 0;
+                    let emptySpaceSize = 0;
+                    
+                    // Check if this square would reveal a large empty area
+                    if (board[square.row][square.col] === 0) {
+                        emptySpaceSize = countConnectedEmpties(square.row, square.col);
+                        score += emptySpaceSize * 10; // Heavily weight empty spaces
+                    }
+                    
+                    // Count revealed neighbors within 2 squares distance
+                    for (let dr = -2; dr <= 2; dr++) {
+                        for (let dc = -2; dc <= 2; dc++) {
+                            const newRow = square.row + dr;
+                            const newCol = square.col + dc;
+                            if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols && revealed[newRow][newCol]) {
+                                const distance = Math.max(Math.abs(dr), Math.abs(dc));
+                                revealedNeighbors += (3 - distance); // Closer revealed squares count more
+                            }
+                        }
+                    }
+                    
+                    score += revealedNeighbors;
+                    
+                    // Bonus for squares that are on the edge of revealed areas
+                    let hasRevealedNeighbor = false;
+                    for (let dr = -1; dr <= 1; dr++) {
+                        for (let dc = -1; dc <= 1; dc++) {
+                            const newRow = square.row + dr;
+                            const newCol = square.col + dc;
+                            if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols && revealed[newRow][newCol]) {
+                                hasRevealedNeighbor = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (hasRevealedNeighbor) score += 5;
+                    
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestSquare = square;
+                    }
+                }
+                
+                // Reveal the best square
+                revealCell(bestSquare.row, bestSquare.col);
+                
+                // Update hints used
+                hintsUsed++;
+                updateHintButton();
+                
+                if (checkWin()) {
+                    endGame(true);
+                }
+            }
+        }
+        
+        function updateHintButton() {
+            const hintButton = document.getElementById('hint-button');
+            const remainingHints = hintsPerGame - hintsUsed;
+            hintButton.textContent = `💡 Hints: ${remainingHints}`;
+            
+            if (remainingHints === 0) {
+                hintButton.style.opacity = '0.5';
+                hintButton.style.cursor = 'not-allowed';
+                document.getElementById('hint-x').style.display = 'block';
+                document.getElementById('hint-x').textContent = '✖';
+            }
+        }
+        
+        function countConnectedEmpties(startRow, startCol) {
+            // Count how many cells would be revealed if we click this empty cell
+            const visited = Array(rows).fill().map(() => Array(cols).fill(false));
+            let count = 0;
+            
+            function explore(row, col) {
+                if (row < 0 || row >= rows || col < 0 || col >= cols || 
+                    visited[row][col] || revealed[row][col] || flagged[row][col]) {
+                    return;
+                }
+                
+                visited[row][col] = true;
+                count++;
+                
+                if (board[row][col] === 0) {
+                    for (let dr = -1; dr <= 1; dr++) {
+                        for (let dc = -1; dc <= 1; dc++) {
+                            explore(row + dr, col + dc);
+                        }
+                    }
+                }
+            }
+            
+            explore(startRow, startCol);
+            return count;
+        }
+
+        function resetGame() {
+            gameOver = false;
+            firstClick = true;
+            timer = 0;
+            hintsUsed = 0;
+            stopTimer();
+            
+            document.getElementById('face-button').textContent = '🙂';
+            document.getElementById('timer').textContent = '000';
+            document.getElementById('mine-count').textContent = String(mines).padStart(3, '0');
+            
+            // Reset hint button
+            const hintButton = document.getElementById('hint-button');
+            hintButton.style.opacity = '1';
+            hintButton.style.cursor = 'pointer';
+            hintButton.textContent = `💡 Hints: ${hintsPerGame}`;
+            document.getElementById('hint-x').style.display = 'none';
+            
+            initBoard();
+            renderBoard();
+        }
+
+        // Add keyboard event listener for spacebar
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && hoveredCell && !gameOver) {
+                e.preventDefault(); // Prevent page scroll
+                const {row, col} = hoveredCell;
+                
+                if (revealed[row][col]) {
+                    // If hovering over revealed number, try chord click
+                    if (board[row][col] > 0) {
+                        chordClick(row, col);
+                    }
+                } else {
+                    // If hovering over covered square, toggle flag
+                    handleRightClick(row, col);
+                }
+            }
+        });
+
+        function showInstructions() {
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            
+            const modal = document.createElement('div');
+            modal.className = 'instructions-modal';
+            modal.innerHTML = `
+                <button class="close-button" onclick="closeInstructions()">✖</button>
+                <h2>How to Play Minesweeper</h2>
+                
+                <h3>Objective</h3>
+                <p>Clear all squares without hitting a mine. Numbers show how many mines are adjacent to that square.</p>
+                
+                <h3>Controls</h3>
+                <ul>
+                    <li><strong>Left Click:</strong> Reveal a square</li>
+                    <li><strong>Right Click:</strong> Place/remove a flag</li>
+                    <li><strong>Click on Number:</strong> Auto-reveal adjacent squares if correct flags are placed</li>
+                    <li><strong>Spacebar:</strong> Quick flag (on covered squares) or chord click (on numbers)</li>
+                </ul>
+                
+                <h3>Features</h3>
+                <ul>
+                    <li><strong>💡 Hints:</strong> Get 3 hints per game to reveal safe squares</li>
+                    <li><strong>🙂 Face Button:</strong> Click to start a new game</li>
+                    <li><strong>Timer:</strong> Tracks your solving time</li>
+                    <li><strong>Mine Counter:</strong> Shows remaining unflagged mines</li>
+                </ul>
+                
+                <h3>Medals</h3>
+                <ul>
+                    <li>🥇 <strong>Gold:</strong> Win with 0 hints</li>
+                    <li>🥈 <strong>Silver:</strong> Win with 1 hint</li>
+                    <li>🥉 <strong>Bronze:</strong> Win with 2 hints</li>
+                    <li>🙂 <strong>Participation:</strong> Win with 3 hints</li>
+                </ul>
+                
+                <h3>Pro Tips</h3>
+                <ul>
+                    <li>First click is always safe</li>
+                    <li>Use spacebar for speed playing</li>
+                    <li>Empty squares cascade automatically</li>
+                    <li>Listen for victory fanfare or sad trombone!</li>
+                </ul>
+            `;
+            
+            document.body.appendChild(overlay);
+            document.body.appendChild(modal);
+            
+            overlay.onclick = closeInstructions;
+        }
+        
+        function closeInstructions() {
+            document.querySelector('.modal-overlay')?.remove();
+            document.querySelector('.instructions-modal')?.remove();
+        }
+
+        // Initialize game
+        resetGame();
+    </script>
+</body>
+</html>
