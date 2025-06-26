@@ -3,7 +3,7 @@
 A nostalgic recreation of the Windows XP Minesweeper game with modern enhancements and classic gameplay.
 
 ![Minesweeper Game](https://img.shields.io/badge/Game-Minesweeper-blue)
-![Version](https://img.shields.io/badge/Version-1.0-green)
+![Version](https://img.shields.io/badge/Version-1.1-green)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
 ![image](https://github.com/user-attachments/assets/4ebe47f4-115a-4098-89c5-801b8eca9345)
@@ -15,10 +15,17 @@ Go to my [github.io page minesweeper landing](https://ebuxheli.github.io/mineswe
 ## 🕹️ How to Play
 
 ### Basic Controls
+#### Desktop Controls
 - **Left Click**: Reveal a square
 - **Right Click**: Place or remove a flag
 - **Click on Number**: Auto-reveal adjacent squares if the correct number of flags are placed
 - **Spacebar**: Quick flag (hover over covered square) or chord click (hover over number)
+
+#### Mobile Controls
+- **Tap**: Reveal a square
+- **Long Press (0.5s)**: Place or remove a flag
+- **Tap on Number**: Auto-reveal adjacent squares if the correct number of flags are placed
+- **Haptic Feedback**: Device vibrates when flag is placed (if supported)
 
 ### Game Elements
 - **Numbers**: Show count of adjacent mines (1-8)
@@ -96,12 +103,30 @@ The hint system uses a sophisticated algorithm to find the most helpful square:
 - Proper z-index layering for effects
 
 ## 🛠️ Technical Details
-
 ### Browser Compatibility
+
+#### Desktop Browsers
 - Chrome/Edge: Full support
 - Firefox: Full support
 - Safari: Full support
-- Mobile: Touch controls supported (tap for left click, long press for flag)
+- Opera: Full support
+
+#### Mobile Browsers
+- **iOS Safari**: Full support with touch controls
+- **Chrome Mobile**: Full support with haptic feedback
+- **Firefox Mobile**: Full support
+- **Samsung Internet**: Full support
+- **Opera Mobile**: Full support
+
+### Mobile Features
+- **Touch-optimized**: Custom touch event handling for reliable flag placement
+- **No zoom interference**: Viewport locked to prevent accidental zooming
+- **iOS-specific fixes**: 
+  - Prevented text selection and callouts
+  - Disabled bounce scrolling
+  - Custom long-press detection (not relying on contextmenu)
+- **Haptic feedback**: Vibration on flag placement (Android/supported devices)
+- **Responsive design**: Works on all screen sizes from phones to tablets
 
 ### Performance
 - Efficient rendering using CSS Grid
