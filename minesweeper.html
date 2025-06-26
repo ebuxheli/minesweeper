@@ -16,6 +16,11 @@
             min-height: 100vh;
             position: relative;
             overflow: hidden;
+            /* Prevent iOS bounce and text selection */
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            user-select: none;
+            touch-action: none;
         }
 
         .confetti {
@@ -205,6 +210,7 @@
             font-size: 14px;
             font-weight: bold;
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .cell.revealed {
@@ -312,6 +318,9 @@
         let hintsUsed = 0;
         let hintsPerGame = 3;
         let hoveredCell = null;
+        let touchTimer = null;
+        let touchedCell = null;
+        let isTouchDevice = 'ontouchstart' in window;
         
         // Difficulty settings
         const difficulties = {
@@ -384,6 +393,49 @@
                     });
                     cell.addEventListener('mouseleave', () => {
                         hoveredCell = null;
+                    });
+                    
+                    // Touch events for mobile
+                    cell.addEventListener('touchstart', (e) => {
+                        e.preventDefault(); // Prevent default touch behavior
+                        touchedCell = {row, col};
+                        
+                        // Start timer for long press
+                        touchTimer = setTimeout(() => {
+                            // Long press detected - place flag
+                            handleRightClick(row, col);
+                            touchedCell = null;
+                            
+                            // Vibrate if available (haptic feedback)
+                            if (navigator.vibrate) {
+                                navigator.vibrate(50);
+                            }
+                        }, 500); // 500ms for long press
+                    }, {passive: false});
+                    
+                    cell.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        
+                        // If timer is still running, it was a tap, not a long press
+                        if (touchTimer) {
+                            clearTimeout(touchTimer);
+                            touchTimer = null;
+                            
+                            // Only handle click if we haven't moved
+                            if (touchedCell && touchedCell.row === row && touchedCell.col === col) {
+                                handleClick(row, col);
+                            }
+                        }
+                        touchedCell = null;
+                    });
+                    
+                    cell.addEventListener('touchcancel', () => {
+                        // Cancel any ongoing touch
+                        if (touchTimer) {
+                            clearTimeout(touchTimer);
+                            touchTimer = null;
+                        }
+                        touchedCell = null;
                     });
                     
                     updateCell(cell, row, col);
