@@ -12,6 +12,36 @@ A nostalgic recreation of the Windows XP Minesweeper game with modern enhancemen
 
 Download the `minesweeper.html` file from the repo in any modern web browser. I promise there is no spam-ware.
 
+## 🕹️ How to Play
+
+### Basic Controls
+- **Left Click**: Reveal a square
+- **Right Click**: Place or remove a flag
+- **Click on Number**: Auto-reveal adjacent squares if the correct number of flags are placed
+- **Spacebar**: Quick flag (hover over covered square) or chord click (hover over number)
+
+### Game Elements
+- **Numbers**: Show count of adjacent mines (1-8)
+- **Flags**: Mark suspected mine locations
+- **Mine Counter**: Displays remaining unflagged mines
+- **Timer**: Tracks solving time (max 999 seconds)
+- **Face Button**: 
+  - 🙂 Normal
+  - 😎 Victory
+  - 😵 Game Over
+
+### No dependencies required!
+This game is built with vanilla HTML, CSS, and JavaScript - no frameworks or libraries needed.
+
+
+## 🎯 Strategy Tips
+
+1. **Corners and edges** are great starting points - they have fewer adjacent squares
+2. **Use the chord click** feature to quickly clear areas once you've flagged correctly
+3. **Save hints** for when you're truly stuck - they're limited!
+4. **Master the spacebar** for speed playing - hover and tap for lightning-fast gameplay
+5. **Pattern recognition** - learn common mine patterns like 1-2-1 or 1-2-2-1
+
 ## 🎮 Features
 
 ### Classic Gameplay
@@ -43,35 +73,6 @@ Download the `minesweeper.html` file from the repo in any modern web browser. I 
   - Instant chord click on revealed numbers
 - **Hover detection** - no clicking required with spacebar
 - **Prevented page scroll** during gameplay
-
-## 🕹️ How to Play
-
-### Basic Controls
-- **Left Click**: Reveal a square
-- **Right Click**: Place or remove a flag
-- **Click on Number**: Auto-reveal adjacent squares if the correct number of flags are placed
-- **Spacebar**: Quick flag (hover over covered square) or chord click (hover over number)
-
-### Game Elements
-- **Numbers**: Show count of adjacent mines (1-8)
-- **Flags**: Mark suspected mine locations
-- **Mine Counter**: Displays remaining unflagged mines
-- **Timer**: Tracks solving time (max 999 seconds)
-- **Face Button**: 
-  - 🙂 Normal
-  - 😎 Victory
-  - 😵 Game Over
-
-### No dependencies required!
-This game is built with vanilla HTML, CSS, and JavaScript - no frameworks or libraries needed.
-
-## 🎯 Strategy Tips
-
-1. **Corners and edges** are great starting points - they have fewer adjacent squares
-2. **Use the chord click** feature to quickly clear areas once you've flagged correctly
-3. **Save hints** for when you're truly stuck - they're limited!
-4. **Master the spacebar** for speed playing - hover and tap for lightning-fast gameplay
-5. **Pattern recognition** - learn common mine patterns like 1-2-1 or 1-2-2-1
 
 ## 🏆 Features Breakdown
 
